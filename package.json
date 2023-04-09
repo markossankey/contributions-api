@@ -11,6 +11,7 @@
     "predev": "yarn tsc",
     "dev": "concurrently \"yarn tsc --watch\" \"node --watch build/server.js \"",
     "build": "tsc",
+    "db:init": "yarn prisma migrate dev --name init",
     "db:reset": "yarn prisma migrate reset --force --skip-seed",
     "db:seed": "yarn prisma migrate reset --force"
   },

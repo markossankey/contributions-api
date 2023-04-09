@@ -11,13 +11,13 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  globalUsername String
-  accounts      GitAccount[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  contributions Contribution[]
+  id             Int            @id @default(autoincrement())
+  email          String         @unique
+  globalUsername String         @unique
+  accounts       GitAccount[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  contributions  Contribution[]
 }
 
 model GitAccount {
