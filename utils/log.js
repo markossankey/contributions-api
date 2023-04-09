@@ -4,7 +4,7 @@
 
 const { spawn } = require("child_process");
 const fs = require("fs");
-const log_file = fs.createWriteStream(__dirname + "/debug.log", { flags: "w", encoding: "utf8" });
+const log_file = fs.createWriteStream(__dirname + "../debug.log", { flags: "w", encoding: "utf8" });
 
 const command = "yarn";
 const args = ["run", "dev"]; // Split the command arguments

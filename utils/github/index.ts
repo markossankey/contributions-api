@@ -3,14 +3,10 @@ import { prisma } from "../../lib/prisma";
 
 export const gh = {
   // create function that runs all the steps
-  fetchContributionsAndAddToDatabase: async function ({
-    username,
-    gitAccountId,
-    userId,
-  }: FetchContributionsAndAddToDatabaseArgs) {
+  fetchContributionsAndAddToDatabase: async function ({ username, gitAccountId }: FetchContributionsAndAddToDatabaseArgs) {
     const calendarData = await this.fetchProfilePage(username);
     const unSavedContributions = this.parseHtmlPage(calendarData);
-    return await this.addContributionsToDatabase({ unSavedContributions, gitAccountId, userId });
+    return await this.addContributionsToDatabase({ unSavedContributions, gitAccountId });
   },
 
   // 21  ---- only get numbers at start of string
@@ -58,12 +54,11 @@ export const gh = {
     return response;
   },
 
-  addContributionsToDatabase: async ({ unSavedContributions, gitAccountId, userId }: AddContributionsToDatabaseArgs) => {
+  addContributionsToDatabase: async ({ unSavedContributions, gitAccountId }: AddContributionsToDatabaseArgs) => {
     const contributionsToCreate = unSavedContributions.map((c) => ({
       ...c,
       date: new Date(c.date),
       gitAccountId,
-      userId,
     }));
     return await prisma.contribution.createMany({ data: contributionsToCreate, skipDuplicates: true });
   },
@@ -73,11 +68,9 @@ type GithubCalendarData = { date: string; count: number };
 type AddContributionsToDatabaseArgs = {
   unSavedContributions: GithubCalendarData[];
   gitAccountId: number;
-  userId: number;
 };
 
 export type FetchContributionsAndAddToDatabaseArgs = {
   username: string;
   gitAccountId: number;
-  userId: number;
 };

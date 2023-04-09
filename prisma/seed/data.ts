@@ -10,11 +10,6 @@ export const githubData = {
   source: "github",
 };
 
-export const testAccount = { globalUsername: "test", email: "test@email.com" };
-
-export const testGithubAccounts = [];
-export const testGitlabAccounts = [];
-
 export const markosGitlabContributions = [
   { date: "2022-07-26", count: 5 },
   { date: "2022-07-28", count: 5 },

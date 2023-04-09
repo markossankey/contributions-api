@@ -5,7 +5,7 @@ import { gl } from "../utils/gitlab";
 
 export default async function updateContributions() {
   const accounts = await prisma.gitAccount
-    .findMany({})
+    .findMany()
     .catch((error) => console.error(`cron-job: Error fetching accounts: ${error}`));
   let promises: Promise<Prisma.BatchPayload>[] = [];
 
@@ -19,7 +19,6 @@ export default async function updateContributions() {
         gl.fetchContributionsAndAddToDatabase({
           username: account.username,
           gitAccountId: account.id,
-          userId: account.userId,
         })
       );
     } else if (account.source === "github") {
@@ -27,7 +26,6 @@ export default async function updateContributions() {
         gh.fetchContributionsAndAddToDatabase({
           username: account.username,
           gitAccountId: account.id,
-          userId: account.userId,
         })
       );
     }

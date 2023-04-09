@@ -11,7 +11,7 @@ router.post("/user", async (req, res) => {
   try {
     const user = await prisma.user.create({
       data: { email, globalUsername },
-      include: { accounts: true, contributions: true },
+      include: { accounts: { include: { contributions: true } } },
     });
     return res.status(201).json(user);
   } catch (e) {
@@ -34,27 +34,13 @@ router.get("/user/:globalUsername", addUserToRequest, async (req, res) => {
   }
 
   const accounts = await prisma.gitAccount.findMany({
-    where: { userId: req.user.id },
+    where: { user: { every: { id: req.user.id } } },
+    include: { contributions: { orderBy: { date: "asc" } } },
   });
 
-  const contributions = await prisma.contribution.groupBy({
-    where: { userId: req.user.id },
-    by: ["date"],
-    orderBy: { date: "asc" },
-    _sum: { count: true },
-  });
-
-  const totalContributions = contributions.reduce((acc, c) => acc + (c._sum.count ?? 0), 0);
-  const totalAccounts = accounts.length;
   return res.status(200).json({
     ...req.user,
-    totalContributions,
-    totalAccounts,
     accounts,
-    contributions: contributions.map((c) => ({
-      date: c.date,
-      count: c._sum.count,
-    })),
   });
 });
 
@@ -65,22 +51,12 @@ router.get("/user/:globalUsername/git-source/:source", addUserToRequest, async (
   }
 
   const accounts = await prisma.gitAccount.findMany({
-    where: { userId: req.user.id, source },
-  });
-
-  const contributions = await prisma.contribution.groupBy({
-    where: { userId: req.user.id, gitAccount: { source: { equals: source } } },
-    by: ["date"],
-    orderBy: { date: "asc" },
-    _sum: { count: true },
+    where: { source, user: { every: { id: req.user.id } } },
+    include: { contributions: { orderBy: { date: "asc" } } },
   });
 
   return res.status(200).json({
     accounts,
-    contributions: contributions.map((c) => ({
-      date: c.date,
-      count: c._sum.count,
-    })),
   });
 });
 
@@ -97,26 +73,22 @@ router.post("/user/:globalUsername/git-source/:source/username", addUserToReques
 
   try {
     const account = await prisma.gitAccount.create({
-      data: { source, username: gitSourceUsername, userId: req.user.id },
+      data: { source, username: gitSourceUsername, user: { connect: { id: req.user.id } } },
     });
 
     let contributionRecordAmount: Prisma.BatchPayload = { count: 0 };
 
     switch (source) {
       case "gitlab":
-        //TODO: figure out how to add contributions to database if next line fails -- maybe use a transaction? -- should be fixed with chron job
         contributionRecordAmount = await gl.fetchContributionsAndAddToDatabase({
           gitAccountId: account.id,
-          userId: req.user.id,
           username: gitSourceUsername,
         });
         break;
 
       case "github":
-        //TODO: figure out how to add contributions to database if next line fails -- maybe use a transaction? -- should be fixed with chron job
         contributionRecordAmount = await gh.fetchContributionsAndAddToDatabase({
           gitAccountId: account.id,
-          userId: req.user.id,
           username: gitSourceUsername,
         });
 
@@ -143,19 +115,14 @@ router.get("/user/:globalUsername/git-source/:source/username/:username", addUse
 
   const account = await prisma.gitAccount.findUnique({
     where: { source_username: { source, username } },
+    include: { contributions: { orderBy: { date: "asc" } } },
   });
 
   if (!account) {
     return res.status(404).send(`Account ${username} not found for source ${source}`);
   }
 
-  const contributions = await prisma.contribution.findMany({
-    where: { gitAccountId: account.id },
-  });
-
-  return res
-    .status(200)
-    .json({ amount: contributions.reduce((runningTotal, each) => runningTotal + each.count, 0), contributions });
+  return res.status(200).json(account);
 });
 
 export default router;

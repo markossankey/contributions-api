@@ -3,14 +3,10 @@ import { FetchContributionsAndAddToDatabaseArgs } from "../github";
 
 export const gl = {
   // add function to fetch calendar data from gitlab and add it to the database
-  fetchContributionsAndAddToDatabase: async function ({
-    username,
-    gitAccountId,
-    userId,
-  }: FetchContributionsAndAddToDatabaseArgs) {
+  fetchContributionsAndAddToDatabase: async function ({ username, gitAccountId }: FetchContributionsAndAddToDatabaseArgs) {
     const calendarData = await this.fetchContributions(username);
     const unSavedContributions = this.mapJsonContributions(calendarData);
-    return await this.addContributionsToDatabase({ unSavedContributions, gitAccountId, userId });
+    return await this.addContributionsToDatabase({ unSavedContributions, gitAccountId });
   },
   dateRegex: /^\d{4}-\d{2}-\d{2}$/,
   fetchContributions: async function (gitlabUsername: string): Promise<DirtyGitlabCalendarData> {
@@ -38,12 +34,11 @@ export const gl = {
   mapJsonContributions: (json: DirtyGitlabCalendarData): GitlabCalendarData[] =>
     Object.entries(json).map(([date, count]) => ({ date, count })),
 
-  addContributionsToDatabase: async ({ unSavedContributions, gitAccountId, userId }: AddContributionsToDatabaseArgs) => {
+  addContributionsToDatabase: async ({ unSavedContributions, gitAccountId }: AddContributionsToDatabaseArgs) => {
     const contributionsToCreate = unSavedContributions.map((c) => ({
       ...c,
       date: new Date(c.date),
       gitAccountId,
-      userId,
     }));
     return await prisma.contribution.createMany({ data: contributionsToCreate, skipDuplicates: true });
   },
@@ -54,5 +49,4 @@ type GitlabCalendarData = { date: string; count: number };
 type AddContributionsToDatabaseArgs = {
   unSavedContributions: GitlabCalendarData[];
   gitAccountId: number;
-  userId: number;
 };

@@ -17,15 +17,13 @@ model User {
   accounts       GitAccount[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  contributions  Contribution[]
 }
 
 model GitAccount {
   id            Int            @id @default(autoincrement())
   source        String
   username      String
-  user          User           @relation(fields: [userId], references: [id])
-  userId        Int
+  user          User[]
   contributions Contribution[]
 
   @@unique([source, username])
@@ -35,8 +33,6 @@ model Contribution {
   id           Int        @id @default(autoincrement())
   date         DateTime   @db.Date
   count        Int
-  user         User       @relation(fields: [userId], references: [id])
-  userId       Int
   gitAccount   GitAccount @relation(fields: [gitAccountId], references: [id])
   gitAccountId Int
 
