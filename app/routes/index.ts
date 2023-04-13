@@ -23,6 +23,22 @@ router.post("/user", async (req, res) => {
   }
 });
 
+router.delete("/user/:globalUsername", async (req, res) => {
+  const { globalUsername } = req.params;
+  try {
+    const user = await prisma.user.delete({
+      where: { globalUsername },
+    });
+    return res.status(200).json(user);
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+      return res.status(404).send(`User with globalUsername ${globalUsername} not found`);
+    }
+    console.error(e);
+    return res.status(500).send("Internal server error");
+  }
+});
+
 router.get("/user", async (req, res) => {
   const users = await prisma.user.findMany();
   return res.status(200).json(users);

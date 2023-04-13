@@ -10,6 +10,10 @@ app.use((req, _res, next) => {
   console.log(req.method, req.url);
   return next();
 });
+app.get("/", (_req, res) => {
+  res.status(200).send("Healthy World");
+});
+
 app.use("/api", routes);
 
 startScheduledJobs();
