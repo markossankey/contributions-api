@@ -13,16 +13,20 @@
     "build": "tsc",
     "db:init": "yarn prisma migrate dev --name init",
     "db:reset": "yarn prisma migrate reset --force --skip-seed",
-    "db:seed": "yarn prisma migrate reset --force"
+    "db:seed": "yarn prisma migrate reset --force",
+    "prestart": "yarn prisma db push && yarn prisma db seed",
+    "start": "node build/server.js"
   },
   "dependencies": {
     "@prisma/client": "4.12.0",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "node-cron": "^3.0.2",
     "node-html-parser": "^6.1.5",
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.13",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.0",
