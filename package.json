@@ -15,7 +15,11 @@
     "db:reset": "yarn prisma migrate reset --force --skip-seed",
     "db:seed": "yarn prisma migrate reset --force",
     "prestart": "yarn prisma db push && yarn prisma db seed",
-    "start": "node build/server.js"
+    "start": "node build/server.js",
+    "image:build": "docker build -t markossankey/contributions-api .",
+    "image:publish": "docker push markossankey/contributions-api",
+    "predeploy": "yarn image:build && yarn image:publish",
+    "deploy": "eb deploy"
   },
   "dependencies": {
     "@prisma/client": "4.12.0",

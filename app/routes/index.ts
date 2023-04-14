@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma";
 import { gh } from "../../utils/github";
 import { gl } from "../../utils/gitlab";
 import addUserToRequest from "../middleware/addUserToRequest";
+import { combinedContributions } from "../../utils";
 const router = express.Router();
 
 router.post("/user", async (req, res) => {
@@ -45,6 +46,8 @@ router.get("/user", async (req, res) => {
 });
 
 router.get("/user/:globalUsername", addUserToRequest, async (req, res) => {
+  const shouldCombineContributions = typeof req.query.combine === "string" && req.query.combine.toLowerCase() === "true";
+
   if (!req.user) {
     return res.status(404).send(`User ${req.params.globalUsername} not found`);
   }
@@ -54,11 +57,20 @@ router.get("/user/:globalUsername", addUserToRequest, async (req, res) => {
     include: { contributions: { orderBy: { date: "asc" } } },
   });
 
+  if (shouldCombineContributions) {
+    const contributions = combinedContributions(accounts);
+    return res.status(200).json({
+      ...req.user,
+      contributions,
+    });
+  }
+
   return res.status(200).json({
     ...req.user,
     accounts,
   });
 });
+
 
 router.get("/user/:globalUsername/git-source/:source", addUserToRequest, async (req, res) => {
   const { globalUsername, source } = req.params;
