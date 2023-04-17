@@ -1,6 +1,4 @@
-/*
-  This file is used to log the output of the child process to a file.
-*/
+//This file is used to log the output of the child process to a file.
 
 const { spawn } = require("child_process");
 const fs = require("fs");
