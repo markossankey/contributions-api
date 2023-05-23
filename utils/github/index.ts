@@ -60,7 +60,16 @@ export const gh = {
       date: new Date(c.date),
       gitAccountId,
     }));
-    return await prisma.contribution.createMany({ data: contributionsToCreate, skipDuplicates: true });
+
+    return await prisma.$transaction(
+      contributionsToCreate.map((c) =>
+        prisma.contribution.upsert({
+          where: { date_gitAccountId: { date: c.date, gitAccountId: c.gitAccountId } },
+          create: c,
+          update: c,
+        })
+      )
+    );
   },
 };
 

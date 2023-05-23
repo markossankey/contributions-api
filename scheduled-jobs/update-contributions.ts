@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { gh } from "../utils/github";
 import { gl } from "../utils/gitlab";
@@ -7,7 +6,7 @@ export default async function updateContributions() {
   const accounts = await prisma.gitAccount
     .findMany()
     .catch((error) => console.error(`cron-job: Error fetching accounts: ${error}`));
-  let promises: Promise<Prisma.BatchPayload>[] = [];
+  let promises: Promise<any>[] = [];
 
   if (!accounts) return;
   if (accounts.length === 0) return console.log("cron-job: No accounts to update contributions for");

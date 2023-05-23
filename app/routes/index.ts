@@ -1,10 +1,10 @@
 import { Prisma } from "@prisma/client";
 import express from "express";
 import { prisma } from "../../lib/prisma";
+import { combinedContributions } from "../../utils";
 import { gh } from "../../utils/github";
 import { gl } from "../../utils/gitlab";
 import addUserToRequest from "../middleware/addUserToRequest";
-import { combinedContributions } from "../../utils";
 const router = express.Router();
 
 router.post("/user", async (req, res) => {
@@ -71,7 +71,6 @@ router.get("/user/:globalUsername", addUserToRequest, async (req, res) => {
   });
 });
 
-
 router.get("/user/:globalUsername/git-source/:source", addUserToRequest, async (req, res) => {
   const { globalUsername, source } = req.params;
   if (!req.user) {
@@ -108,17 +107,25 @@ router.post("/user/:globalUsername/git-source/:source/username", addUserToReques
 
     switch (source) {
       case "gitlab":
-        contributionRecordAmount = await gl.fetchContributionsAndAddToDatabase({
-          gitAccountId: account.id,
-          username: gitSourceUsername,
-        });
+        contributionRecordAmount = {
+          count: await gl
+            .fetchContributionsAndAddToDatabase({
+              gitAccountId: account.id,
+              username: gitSourceUsername,
+            })
+            .then((res) => res.length),
+        };
         break;
 
       case "github":
-        contributionRecordAmount = await gh.fetchContributionsAndAddToDatabase({
-          gitAccountId: account.id,
-          username: gitSourceUsername,
-        });
+        contributionRecordAmount = {
+          count: await gh
+            .fetchContributionsAndAddToDatabase({
+              gitAccountId: account.id,
+              username: gitSourceUsername,
+            })
+            .then((res) => res.length),
+        };
 
         break;
       default:
